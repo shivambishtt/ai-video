@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt"
 
-interface User {
+interface IUser {
     email: string,
     password: string,
     _id?: mongoose.Types.ObjectId,
@@ -12,7 +12,7 @@ interface User {
     isAdmin: boolean,
 }
 
-const userSchema = new Schema<User>({
+const userSchema = new Schema<IUser>({
     email: {
         type: String,
         required: true,
@@ -32,5 +32,5 @@ userSchema.pre("save", async function (next) {
     }
 })
 
-const User = mongoose?.models?.User || mongoose.model<User>("User", userSchema)
+const User = mongoose?.models?.User || mongoose.model<IUser>("User", userSchema)
 export default User
