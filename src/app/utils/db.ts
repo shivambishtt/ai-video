@@ -10,7 +10,7 @@ if (!cached) {
 }
 
 
-export async function connectDB() {
+export default async function connectDB() {
     if (cached.connection) {
         return cached.connection
     }
