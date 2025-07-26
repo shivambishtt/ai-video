@@ -29,13 +29,36 @@ function RegisterPage() {
             if (!response.ok) {
                 throw new Error(data.error || "Registration failed")
             }
+            console.log(data)
+            router.push("/login")
         } catch (error) {
-
+            console.log(error)
         }
     }
     return (
         <div>
-            Register
+            <h1>Register</h1>
+            <form onSubmit={handleSubmit}>
+                <input type="email"
+                    placeholder='Email'
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                />
+                <input type="password"
+                    placeholder='Password'
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                />
+                <input type="password"
+                    placeholder='Confirm password'
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                />
+                <button type='submit'>Register</button>
+            </form>
+            <div>
+                <p>Already have an account? <a href="/login">Login</a></p>
+            </div>
         </div>
     )
 }
