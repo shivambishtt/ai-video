@@ -1,20 +1,35 @@
 "use client"
 
 import {
-    ImageKitAbortError,
-    ImageKitInvalidRequestError,
-    ImageKitServerError,
-    ImageKitUploadNetworkError,
-    upload,
+    ImageKitAbortError, ImageKitInvalidRequestError, ImageKitServerError, ImageKitUploadNetworkError, upload,
 } from "@imagekit/next";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
-const Fileupload = () => {
-    const [progress, setProgress] = useState(0);
+interface FileUploadProps {
+    onSuccess: (res: any) => void
+    onProgress?: (progress: number) => void
+    fileType?: "image" | "video"
+}
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
+const Fileupload = ({
+    onSuccess,
+    onProgress,
+    fileType
+}: FileUploadProps) => {
+    const [uploading, setUploading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
-    const abortController = new AbortController();
+    const validateFile = (file: File) => {
+        if (fileType === "video") {
+            if (!file.type.startsWith("video/")) {
+                setError("Please upload valid video file type")
+            }
+        }
+        if (file.size > 100 * 1024 * 1024) {
+            setError("File size must be less than 100 MB")
+        }
+        return true
+    }
 
     const authenticator = async () => {
         try {
@@ -94,15 +109,11 @@ const Fileupload = () => {
 
     return (
         <>
-            {/* File input element using React ref */}
-            <input type="file" ref={fileInputRef} />
-            {/* Button to trigger the upload process */}
-            <button type="button" onClick={handleUpload}>
-                Upload file
-            </button>
-            <br />
-            {/* Display the current upload progress */}
-            Upload progress: <progress value={progress} max={100}></progress>
+            <input
+                type="file"
+                accept={fileType === "video" ? "video/*" : "image/*"}
+                onChange={handleFileChange}
+            />
         </>
     );
 };
