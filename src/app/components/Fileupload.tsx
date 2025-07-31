@@ -31,6 +31,38 @@ const Fileupload = ({
         return true
     }
 
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
+        if (!file || !validateFile(file)) return
+        setUploading(true)
+        setError(null)
+        try {
+            const authParamsResponse = await fetch("/api/auth/imagekit-auth")
+            const auth = await authParamsResponse.json()
+
+            const response = await upload({
+                file,
+                fileName: file.name,
+                publicKey: process.env.NEXT_PUBLIC_PUBLIC_KEY as string,
+                signature: auth.signature,
+                expire: auth.expire,
+                token: auth.token,
+                onProgress: (event) => {
+                    if (event.lengthComputable && onProgress) {
+                        const percent = (event.loaded / event.total) * 100
+                        onProgress(Math.round(percent))
+                    }
+                },
+            })
+            onSuccess(response)
+        } catch (error) {
+            console.error("Upload failed", error)
+        } finally {
+            setUploading(false)
+        }
+
+    }
+
     const authenticator = async () => {
         try {
             const response = await fetch("/api/");
@@ -72,50 +104,18 @@ const Fileupload = ({
         const { signature, expire, token, publicKey } = authParams;
 
 
-        // important task !
-        try {
-            const uploadResponse = await upload({
-                // Authentication parameters
-                expire,
-                token,
-                signature,
-                publicKey,
-                file,
-                fileName: file.name, // Optionally set a custom file name
-                // Progress callback to update upload progress state
-                onProgress: (event) => {
-                    setProgress((event.loaded / event.total) * 100);
-                },
-                // Abort signal to allow cancellation of the upload if needed.
-                abortSignal: abortController.signal,
-            });
-            console.log("Upload response:", uploadResponse);
-        } catch (error) {
-            // Handle specific error types provided by the ImageKit SDK.
-            if (error instanceof ImageKitAbortError) {
-                console.error("Upload aborted:", error.reason);
-            } else if (error instanceof ImageKitInvalidRequestError) {
-                console.error("Invalid request:", error.message);
-            } else if (error instanceof ImageKitUploadNetworkError) {
-                console.error("Network error:", error.message);
-            } else if (error instanceof ImageKitServerError) {
-                console.error("Server error:", error.message);
-            } else {
-                // Handle any other errors that may occur.
-                console.error("Upload error:", error);
-            }
-        }
+        return (
+            <>
+                <input
+                    type="file"
+                    accept={fileType === "video" ? "video/*" : "image/*"}
+                    onChange={handleFileChange}
+                />
+                {uploading && (
+                    <span>Loading..</span>
+                )}
+            </>
+        );
     };
 
-    return (
-        <>
-            <input
-                type="file"
-                accept={fileType === "video" ? "video/*" : "image/*"}
-                onChange={handleFileChange}
-            />
-        </>
-    );
-};
-
-export default Fileupload;
+    export default Fileupload;
