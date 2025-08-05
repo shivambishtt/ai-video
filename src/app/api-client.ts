@@ -1,3 +1,5 @@
+import { POST } from "./api/video/route"
+
 type FetchOptions = {
     method?: "GET" | "POST" | "PUT" | "DELETE"
     body?: any
@@ -19,6 +21,19 @@ class ApiClient {
             headers: defautltHeaders,
             body: body ? JSON.stringify(body)
         })
+        if (!response.ok) {
+            throw new Error(await response.text())
+        }
         return response.json()
+    }
+    async getVideos() {
+        return this.fetch("/videos")
+    }
+
+    async createVideo(videoData){
+        return this.fetch("/videos",{
+            method:"POST",
+                body:videoData
+        })
     }
 }
